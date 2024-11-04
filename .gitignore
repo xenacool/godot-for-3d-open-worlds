@@ -379,3 +379,7 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 *.generated.props
+
+
+# GF3DOW other
+scons_cache/
