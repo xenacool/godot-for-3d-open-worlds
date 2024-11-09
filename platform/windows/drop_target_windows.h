@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_importer_mp3.h                                               */
+/*  drop_target_windows.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_MP3_H
-#define RESOURCE_IMPORTER_MP3_H
+#ifndef DROP_TARGET_WINDOWS_H
+#define DROP_TARGET_WINDOWS_H
 
-#include "audio_stream_mp3.h"
+#include "display_server_windows.h"
 
-#include "core/io/resource_importer.h"
+#include <shlobj.h>
 
-class ResourceImporterMP3 : public ResourceImporter {
-	GDCLASS(ResourceImporterMP3, ResourceImporter);
+// Silence warning due to a COM API weirdness.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
+// https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-dodragdrop#remarks
+class DropTargetWindows : public IDropTarget {
+	LONG ref_count;
+	DisplayServerWindows::WindowData *window_data = nullptr;
+	CLIPFORMAT cf_filedescriptor = 0;
+	CLIPFORMAT cf_filecontents = 0;
+	String tmp_path;
+
+	bool is_valid_filedescriptor();
+	HRESULT handle_hdrop_format(Vector<String> *p_files, IDataObject *pDataObj);
+	HRESULT handle_filedescriptor_format(Vector<String> *p_files, IDataObject *pDataObj);
+	HRESULT save_as_file(const String &p_out_dir, FILEDESCRIPTORW *p_file_desc, IDataObject *pDataObj, int p_file_idx);
 
 public:
-	virtual String get_importer_name() const override;
-	virtual String get_visible_name() const override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual String get_save_extension() const override;
-	virtual String get_resource_type() const override;
+	DropTargetWindows(DisplayServerWindows::WindowData *p_window_data);
+	virtual ~DropTargetWindows() {}
 
-	virtual int get_preset_count() const override;
-	virtual String get_preset_name(int p_idx) const override;
+	// IUnknown
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
+	ULONG STDMETHODCALLTYPE AddRef() override;
+	ULONG STDMETHODCALLTYPE Release() override;
 
-	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
-	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
-
-#ifdef TOOLS_ENABLED
-	virtual bool has_advanced_options() const override;
-	virtual void show_advanced_options(const String &p_path) override;
-#endif
-	static Ref<AudioStreamMP3> import_mp3(const String &p_path);
-
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
-
-	virtual bool can_import_threaded() const override { return true; }
-
-	ResourceImporterMP3();
+	// IDropTarget
+	HRESULT STDMETHODCALLTYPE DragEnter(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+	HRESULT STDMETHODCALLTYPE DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+	HRESULT STDMETHODCALLTYPE DragLeave() override;
+	HRESULT STDMETHODCALLTYPE Drop(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
 };
 
-#endif // RESOURCE_IMPORTER_MP3_H
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+#endif // DROP_TARGET_WINDOWS_H
