@@ -82,7 +82,7 @@ void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binorm
 layout(location = 0) highp out vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) highp out vec3 normal_interp;
+layout(location = 1) mediump out vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
@@ -98,8 +98,8 @@ layout(location = 4) mediump out vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) highp out vec3 tangent_interp;
-layout(location = 6) highp out vec3 binormal_interp;
+layout(location = 5) mediump out vec3 tangent_interp;
+layout(location = 6) mediump out vec3 binormal_interp;
 #endif
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 layout(location = 7) highp out vec4 diffuse_light_interp;
@@ -578,7 +578,7 @@ void main() {
 layout(location = 0) highp in vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) highp in vec3 normal_interp;
+layout(location = 1) mediump in vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
@@ -594,8 +594,8 @@ layout(location = 4) mediump in vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) highp in vec3 tangent_interp;
-layout(location = 6) highp in vec3 binormal_interp;
+layout(location = 5) mediump in vec3 tangent_interp;
+layout(location = 6) mediump in vec3 binormal_interp;
 #endif
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
