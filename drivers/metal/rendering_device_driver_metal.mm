@@ -358,11 +358,25 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) {
-	id<MTLTexture> obj = (__bridge id<MTLTexture>)(void *)(uintptr_t)p_native_texture;
+	id<MTLTexture> res = (__bridge id<MTLTexture>)(void *)(uintptr_t)p_native_texture;
 
-	// We only need to create a RDD::TextureID for an existing, natively-provided texture.
+	// If the requested format is different, we need to create a view.
+	MTLPixelFormat format = pixel_formats->getMTLPixelFormat(p_format);
+	if (res.pixelFormat != format) {
+		MTLTextureSwizzleChannels swizzle = MTLTextureSwizzleChannelsMake(
+				MTLTextureSwizzleRed,
+				MTLTextureSwizzleGreen,
+				MTLTextureSwizzleBlue,
+				MTLTextureSwizzleAlpha);
+		res = [res newTextureViewWithPixelFormat:format
+									 textureType:res.textureType
+										  levels:NSMakeRange(0, res.mipmapLevelCount)
+										  slices:NSMakeRange(0, p_array_layers)
+										 swizzle:swizzle];
+		ERR_FAIL_NULL_V_MSG(res, TextureID(), "Unable to create texture view.");
+	}
 
-	return rid::make(obj);
+	return rid::make(res);
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
@@ -2020,7 +2034,8 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 		ERR_FAIL_COND_V_MSG(compiler.get_entry_points_and_stages().size() != 1, Result(), "Expected a single entry point and stage.");
 
-		EntryPoint &entry_point_stage = compiler.get_entry_points_and_stages().front();
+		SmallVector<EntryPoint> entry_pts_stages = compiler.get_entry_points_and_stages();
+		EntryPoint &entry_point_stage = entry_pts_stages.front();
 		SPIREntryPoint &entry_point = compiler.get_entry_point(entry_point_stage.name, entry_point_stage.execution_model);
 
 		// Process specialization constants.
