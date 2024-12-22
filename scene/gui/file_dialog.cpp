@@ -398,7 +398,17 @@ void FileDialog::update_dir() {
 }
 
 void FileDialog::_dir_submitted(String p_dir) {
-	_change_dir(root_prefix.path_join(p_dir));
+	String new_dir = p_dir;
+#ifdef WINDOWS_ENABLED
+	if (root_prefix.is_empty() && drives->is_visible() && !new_dir.is_network_share_path() && new_dir.is_absolute_path() && new_dir.find(":/") == -1 && new_dir.find(":\\") == -1) {
+		// Non network path without X:/ prefix on Windows, add drive letter.
+		new_dir = drives->get_item_text(drives->get_selected()).path_join(new_dir);
+	}
+#endif
+	if (!root_prefix.is_empty()) {
+		new_dir = root_prefix.path_join(new_dir);
+	}
+	_change_dir(new_dir);
 	file->set_text("");
 	_push_history();
 }
@@ -1639,13 +1649,13 @@ FileDialog::FileDialog() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_theme_type_variation("FlatButton");
+	dir_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_prev->set_tooltip_text(ETR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_theme_type_variation("FlatButton");
+	dir_next->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_next->set_tooltip_text(ETR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_theme_type_variation("FlatButton");
+	dir_up->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_up->set_tooltip_text(ETR("Go to parent folder."));
 	hbc->add_child(dir_prev);
 	hbc->add_child(dir_next);
@@ -1669,13 +1679,13 @@ FileDialog::FileDialog() {
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
-	refresh->set_theme_type_variation("FlatButton");
+	refresh->set_theme_type_variation(SceneStringName(FlatButton));
 	refresh->set_tooltip_text(ETR("Refresh files."));
 	refresh->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_theme_type_variation("FlatButton");
+	show_hidden->set_theme_type_variation(SceneStringName(FlatButton));
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(ETR("Toggle the visibility of hidden files."));
@@ -1683,7 +1693,7 @@ FileDialog::FileDialog() {
 	hbc->add_child(show_hidden);
 
 	show_filename_filter_button = memnew(Button);
-	show_filename_filter_button->set_theme_type_variation("FlatButton");
+	show_filename_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_filename_filter_button->set_toggle_mode(true);
 	show_filename_filter_button->set_pressed(false);
 	show_filename_filter_button->set_tooltip_text(RTR("Toggle the visibility of the filter for file names."));
@@ -1694,7 +1704,7 @@ FileDialog::FileDialog() {
 	hbc->add_child(shortcuts_container);
 
 	makedir = memnew(Button);
-	makedir->set_theme_type_variation("FlatButton");
+	makedir->set_theme_type_variation(SceneStringName(FlatButton));
 	makedir->set_tooltip_text(ETR("Create a new folder."));
 	makedir->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_make_dir));
 	hbc->add_child(makedir);

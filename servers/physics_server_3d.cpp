@@ -33,7 +33,6 @@
 #include "physics_server_3d.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/print_string.h"
 #include "core/variant/typed_array.h"
 
 void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
@@ -1155,6 +1154,7 @@ void PhysicsServer3DManager::on_servers_changed() {
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
 	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);
+	ProjectSettings::get_singleton()->set_as_basic(setting_property_name, true);
 }
 
 void PhysicsServer3DManager::_bind_methods() {

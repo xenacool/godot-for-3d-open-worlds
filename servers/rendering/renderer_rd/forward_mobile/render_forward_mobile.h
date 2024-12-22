@@ -33,9 +33,7 @@
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/utilities.h"
 
 #define RB_SCOPE_MOBILE SNAME("mobile")
 
@@ -184,7 +182,7 @@ private:
 		float normal_xform[12];
 		float texture_size[2];
 		float exposure_normalization;
-		float pad;
+		uint32_t flags;
 	};
 
 	struct LightmapCaptureData {

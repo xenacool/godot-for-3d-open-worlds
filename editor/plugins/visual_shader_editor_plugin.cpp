@@ -5188,6 +5188,7 @@ void VisualShaderEditor::_notification(int p_what) {
 			}
 
 			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			graph->get_panner()->set_viewport(get_viewport());
 			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
 		} break;
 
@@ -6554,14 +6555,14 @@ VisualShaderEditor::VisualShaderEditor() {
 	varying_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
 
 	code_preview_button = memnew(Button);
-	code_preview_button->set_theme_type_variation("FlatButton");
+	code_preview_button->set_theme_type_variation(SceneStringName(FlatButton));
 	code_preview_button->set_toggle_mode(true);
 	code_preview_button->set_tooltip_text(TTR("Show generated shader code."));
 	toolbar->add_child(code_preview_button);
 	code_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	shader_preview_button = memnew(Button);
-	shader_preview_button->set_theme_type_variation("FlatButton");
+	shader_preview_button->set_theme_type_variation(SceneStringName(FlatButton));
 	shader_preview_button->set_toggle_mode(true);
 	shader_preview_button->set_tooltip_text(TTR("Toggle shader preview."));
 	shader_preview_button->set_pressed(true);
